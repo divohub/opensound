@@ -9,11 +9,18 @@ class PackageType(str, Enum):
     samplepack = "samplepack"
 
 
+class OsType(str, Enum):
+    linux = "linux"
+    windows = "windows"
+    macos = "macos"
+
+
 class Recipe(BaseModel):
     name: str
     version: str
     description: str | None = None
     type: PackageType
+    os: OsType
     url: HttpUrl
     install_path: str
     sha256: str | None = None
