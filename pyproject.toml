@@ -1,0 +1,29 @@
+[build-system]
+requires = ["hatchling >= 1.26", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "vcs"
+
+[project]
+name = "opensound"
+readme = "README.md"
+dynamic = ["version"]
+description = "a package manager for opensource sound projects"
+requires-python = ">=3.10"
+
+dependencies = [
+  "httpx",
+  "uvicorn",
+  "pyyaml",
+  "fastapi",
+  "typer",
+  "sqlalchemy",
+  "asyncpg",
+  "rich",
+  "psycorpg2-binary"
+]
+
+[project.scripts]
+
+opensound = "cli.main:app"
