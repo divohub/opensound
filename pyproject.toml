@@ -21,7 +21,8 @@ dependencies = [
   "sqlalchemy",
   "asyncpg",
   "rich",
-  "psycopg2-binary"
+  "psycopg2-binary",
+  "aiofiles",
 ]
 
 [project.scripts]
@@ -29,4 +30,4 @@ dependencies = [
 opensound = "cli.main:app"
 
 [tool.hatch.build.targets.wheel]
-packages = [ "cli", "backend" ]
+packages = ["cli", "backend"]
