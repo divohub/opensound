@@ -28,7 +28,7 @@ class OsType(str, Enum):
 class Targets(BaseModel):
     type: PackageType
     path: str
-    enabled: bool = true
+    enabled: bool = True
 
 
 class Recipe(BaseModel):
