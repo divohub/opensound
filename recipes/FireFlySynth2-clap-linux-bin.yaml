@@ -3,7 +3,7 @@ version: "1.5.5"
 description: "Spectral warping wavetable synthesizer"
 targets:
   - type: "clap"
-    path: "FireFlySynth.clap"
+    path: "FireflySynth2.clap"
 os: "linux"
 url: "https://github.com/sjoerdvankreel/firefly-synth-2/releases/download/v2.1.2/FireflySynth2-linux-clap-Release.zip"
 sha256: "bea4b22da4e40e5f1c640cb06700f7fa0718b412230d3f30287d202af23409a4"

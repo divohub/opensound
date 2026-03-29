@@ -1,8 +1,0 @@
-name: "Vital-Synth"
-version: "1.5.5"
-description: "Spectral warping wavetable synthesizer"
-type: "vst3"
-os: "linux"
-url: "https://github.com/mtytel/vital/releases/download/v1.5.5/VitalInstaller-Linux.zip"
-install_path: "~/.vst3/Vital.vst3"
-sha256: "00000000000000000000000000000000"

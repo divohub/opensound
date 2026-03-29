@@ -23,6 +23,9 @@ dependencies = [
   "rich",
   "psycopg2-binary",
   "aiofiles",
+  "pytest",
+  "pytest-asyncio",
+  "pytest-mock",
 ]
 
 [project.scripts]
