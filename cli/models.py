@@ -38,5 +38,4 @@ class Recipe(BaseModel):
     targets: list[Targets] = Field(min_length=1)
     os: OsType
     url: HttpUrl
-    install_path: str
     sha256: str | None = Field(min_length=64, max_length=64)
