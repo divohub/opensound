@@ -39,7 +39,9 @@ async def download_package(
 
         async with httpx.AsyncClient() as client:
             async with client.stream("GET", str(recipe.url)) as response:
-                response.raise_for_status()
+                if response.is_error:
+                    await response.aread()
+                    response.raise_for_status()
 
                 # TODO: progress bar implement
 
@@ -55,7 +57,7 @@ async def download_package(
 
                 # downloaded_bytes = 0
 
-                temp_zip_path = base_path / f"{recipe.name}"
+                temp_zip_path = base_path / f"{recipe.name}.zip"
 
                 async with aiofiles.open(temp_zip_path, "wb") as f:
                     async for chunk in response.aiter_bytes(chunk_size=chunk_size):
@@ -65,10 +67,9 @@ async def download_package(
             return temp_zip_path
 
     except httpx.HTTPStatusError as e:
+        error_body = e.response.text if e.response.is_closed else "Content not read"
         console.log(
-            f"[bold red]Error HTTP: {e.response.status_code} - {
-                e.response.text
-            }[/bold red]"
+            f"[bold red]Error HTTP: {e.response.status_code} - {error_body}[/bold red]"
         )
     except httpx.RequestError as e:
         console.log(f"[bold red]RequestError : {e}[/bold red]")
@@ -85,21 +86,19 @@ async def install_recipe(recipe: Recipe):
     if zip_path:
         config = load_config()
         console.log(
-            f"Starting extraction for [bold cyan] {
-                recipe.name}[/bold cyan] ..."
+            f"Starting extraction for [bold cyan] {recipe.name}[/bold cyan] ..."
         )
 
         try:
             await asyncio.to_thread(_sync_extract_package, zip_path, recipe, config)
             console.log(
-                f"[bold green]Sussesfully installed {
-                    recipe.name} [/bold green]"
+                f"[bold green]Sussecfully installed {recipe.name} [/bold green]"
             )
         except Exception as e:
             console.log(f"[bold red]Installation is failed: {e} [/bold red]")
 
 
-async def _sync_extract_package(zip_path: Path, recipe: Recipe, config: AppConfig):
+def _sync_extract_package(zip_path: Path, recipe: Recipe, config: AppConfig):
     cache_dir = get_default_cache_dir()
 
     with zipfile.ZipFile(zip_path, "r") as zf:
@@ -134,8 +133,7 @@ async def _sync_extract_package(zip_path: Path, recipe: Recipe, config: AppConfi
 
                 # shit should doit more elegant in a future
                 if final_destination.exists():
-                    console.log(f"Replacing existing version at {
-                                final_destination}")
+                    console.log(f"Replacing existing version at {final_destination}")
 
                     if final_destination.is_dir():
                         shutil.rmtree(final_destination)
@@ -145,8 +143,4 @@ async def _sync_extract_package(zip_path: Path, recipe: Recipe, config: AppConfi
                 final_destination.parent.mkdir(parents=True, exist_ok=True)
 
                 shutil.move(str(source_path), str(final_destination))
-                console.log(
-                    f"  [+] Installed {target.type.value}: [yellow]{
-                        final_destination
-                    }[/yellow]"
-                )
+                console.log
