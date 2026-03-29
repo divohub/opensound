@@ -1,3 +1,10 @@
+"""Installer module for fetching and extracting sound packages.
+
+This module handles downloading package artifacts via HTTP, extracting ZIP archives,
+and correctly placing the extracted components in standard OS-specific directories
+defined by the configuration.
+"""
+
 import os
 import asyncio
 from pathlib import Path
@@ -16,6 +23,13 @@ console = Console()
 
 
 def get_default_cache_dir() -> Path:
+    """Retrieve the platform-specific default cache directory.
+
+    Resolves to `$XDG_CACHE_HOME/opensound` or `~/.cache/opensound`.
+
+    Returns:
+        Path: A path object pointing to the writable cache directory.
+    """
     xdg_cache = os.getenv("XDG_CACHE_HOME", "~/.cache/")
     base = Path(xdg_cache).expanduser() / "opensound"
 
@@ -26,6 +40,19 @@ def get_default_cache_dir() -> Path:
 async def download_package(
     recipe: Recipe, custom_path: Optional[Path] = None, chunk_size: int = 8192
 ) -> Path | None:
+    """Download a package asynchronously over HTTP.
+
+    Streams a package from `recipe.url` into a temporary zip file.
+
+    Args:
+        recipe: The `Recipe` object describing the file to download.
+        custom_path: An optional directory to download the file into.
+        chunk_size: Size in bytes of each download chunk (default 8192).
+
+    Returns:
+        Path | None: The absolute path to the downloaded .zip file on disk,
+            or `None` if an HTTP/Request error occurs.
+    """
     # task_id ?
 
     if custom_path:
@@ -34,10 +61,10 @@ async def download_package(
         base_path = get_default_cache_dir()
 
     try:
-        # maybe redundancy ? nah im fucking goat
+        # We use asyncio.to_thread to prevent blocking the event loop on IO calls
         await asyncio.to_thread(os.makedirs, str(base_path), exist_ok=True)
 
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(follow_redirects=True) as client:
             async with client.stream("GET", str(recipe.url)) as response:
                 if response.is_error:
                     await response.aread()
@@ -69,7 +96,8 @@ async def download_package(
     except httpx.HTTPStatusError as e:
         error_body = e.response.text if e.response.is_closed else "Content not read"
         console.log(
-            f"[bold red]Error HTTP: {e.response.status_code} - {error_body}[/bold red]"
+            f"[bold red]Error HTTP: {
+                e.response.status_code} - {error_body}[/bold red]"
         )
     except httpx.RequestError as e:
         console.log(f"[bold red]RequestError : {e}[/bold red]")
@@ -79,6 +107,14 @@ async def download_package(
 
 
 async def install_recipe(recipe: Recipe):
+    """Orchestrate the installation process for a specific recipe.
+
+    Downloads the artifact, loads current app config, and dispatches the
+    extraction process to a separate thread.
+
+    Args:
+        recipe: The `Recipe` to install.
+    """
     # main entry point for installation
 
     zip_path = await download_package(recipe)
@@ -99,6 +135,24 @@ async def install_recipe(recipe: Recipe):
 
 
 def _sync_extract_package(zip_path: Path, recipe: Recipe, config: AppConfig):
+    """Synchronously extract and place files from a downloaded ZIP archive.
+
+    This function is CPU/IO bound and should be executed in a thread pool.
+    It verifies that requested targets exist in the zip file, extracts it to
+    a temporary path, and systematically moves files into their final system
+    destinations.
+
+    Args:
+        zip_path: Path to the downloaded ZIP artifact.
+        recipe: Configuration metadata defining what components to extract.
+        config: Application configuration, mapping package types to install paths.
+
+    Raises:
+        ValueError: If a target path defined in the recipe is completely missing
+            from the ZIP archive list.
+        FileNotFoundError: If a target path is found in namelist, but fails
+            to manifest during the physical extraction process.
+    """
     cache_dir = get_default_cache_dir()
 
     with zipfile.ZipFile(zip_path, "r") as zf:
@@ -131,9 +185,11 @@ def _sync_extract_package(zip_path: Path, recipe: Recipe, config: AppConfig):
 
                 source_path = found_items[0]
 
-                # shit should doit more elegant in a future
+                # We can do this more elegantly in the future,
+                # but currently we replace the target if it already exists.
                 if final_destination.exists():
-                    console.log(f"Replacing existing version at {final_destination}")
+                    console.log(f"Replacing existing version at {
+                                final_destination}")
 
                     if final_destination.is_dir():
                         shutil.rmtree(final_destination)
@@ -143,4 +199,5 @@ def _sync_extract_package(zip_path: Path, recipe: Recipe, config: AppConfig):
                 final_destination.parent.mkdir(parents=True, exist_ok=True)
 
                 shutil.move(str(source_path), str(final_destination))
-                console.log
+                console.log(f"Moved {target.path} successfully to {
+                            final_destination}")

@@ -1,3 +1,9 @@
+"""Command-Line Interface for OpenSound.
+
+Serves as the main entry point to install packages via recipes
+using the Typer framework.
+"""
+
 import asyncio
 import typer
 from rich.console import Console
@@ -12,6 +18,13 @@ app = typer.Typer()
 
 @app.command()
 def install(local: str = typer.Option(None, "--local", "-l")):
+    """Install a sound package from a local recipe.
+
+    Args:
+        local: An optional path pointing to a local .yaml recipe file.
+            If provided, the system parses the YAML, validates it into a Recipe,
+            and attempts an automated download and installation of targets.
+    """
     if local:
         with open(local) as file:
             data = yaml.safe_load(file)
