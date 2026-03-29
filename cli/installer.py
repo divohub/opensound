@@ -25,7 +25,7 @@ def get_default_cache_dir() -> Path:
 
 async def download_package(
     recipe: Recipe, custom_path: Optional[Path] = None, chunk_size: int = 8192
-):
+) -> Path | None:
     # task_id ?
 
     if custom_path:
@@ -62,6 +62,7 @@ async def download_package(
                         await f.write(chunk)
                         # downloaded_bytes += len(chunk)
                         # progress.update(task_id, downloaded_bytes)
+            return temp_zip_path
 
     except httpx.HTTPStatusError as e:
         console.log(
