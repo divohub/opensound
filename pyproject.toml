@@ -26,6 +26,7 @@ dependencies = [
   "pytest",
   "pytest-asyncio",
   "pytest-mock",
+  "pydantic-settings",
 ]
 
 [project.scripts]
