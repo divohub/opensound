@@ -20,7 +20,7 @@ class TestModels:
     def test_recipe_creation_success(self):
         """Positive test: Ensure valid data creates a Recipe object without throwing exceptions."""
         recipe = Recipe(**VALID_RECIPE_PAYLOAD)
-        
+
         assert recipe.name == "vital"
         assert recipe.version == "1.5.5"
         assert recipe.os == OsType.linux
@@ -31,13 +31,13 @@ class TestModels:
     def test_recipe_invalid_sha256_length(self):
         """Negative test: Ensure sha256 must be exactly 64 characters long."""
         invalid_payload = VALID_RECIPE_PAYLOAD.copy()
-        
+
         # Test too short
         invalid_payload["sha256"] = "a" * 63
         with pytest.raises(ValidationError) as exc_info:
             Recipe(**invalid_payload)
         assert "sha256" in str(exc_info.value)
-        
+
         # Test too long
         invalid_payload["sha256"] = "a" * 65
         with pytest.raises(ValidationError) as exc_info:
@@ -48,10 +48,10 @@ class TestModels:
         """Negative test: Ensure targets list cannot be empty."""
         invalid_payload = VALID_RECIPE_PAYLOAD.copy()
         invalid_payload["targets"] = []
-        
+
         with pytest.raises(ValidationError) as exc_info:
             Recipe(**invalid_payload)
-        
+
         # Checking that the error is explicitly about the 'targets' field constraints
         assert "targets" in str(exc_info.value)
 
@@ -67,14 +67,14 @@ class TestModels:
         """Negative test: Ensure unsupported OS values are rejected."""
         payload = VALID_RECIPE_PAYLOAD.copy()
         payload["os"] = "templeos"  # Unsupported
-        
+
         with pytest.raises(ValidationError):
             Recipe(**payload)
 
     def test_app_config_defaults(self):
         """Positive test: Ensure AppConfig has sensible fallback defaults if not provided."""
         config = AppConfig()
-        
+
         # Assert default paths are populated correctly
         assert PackageType.vst3 in config.install_paths
         assert config.install_paths[PackageType.vst3] == "~/.vst3"
@@ -84,5 +84,5 @@ class TestModels:
         """Positive test: Ensure AppConfig accepts custom path overrides."""
         custom_paths = {PackageType.vst3: "/opt/custom/vst3"}
         config = AppConfig(install_paths=custom_paths)
-        
+
         assert config.install_paths[PackageType.vst3] == "/opt/custom/vst3"
