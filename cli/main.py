@@ -8,7 +8,7 @@ import asyncio
 import typer
 from rich.console import Console
 import yaml
-from .models import Recipe
+from .models import RecipeSchema
 from .installer import install_recipe
 
 console = Console()
@@ -28,7 +28,7 @@ def install(local: str = typer.Option(None, "--local", "-l")):
     if local:
         with open(local) as file:
             data = yaml.safe_load(file)
-            recipe = Recipe(**data)
+            recipe = RecipeSchema(**data)
             console.print(f"Succesfully loaded: {recipe}")
 
         asyncio.run(install_recipe(recipe))

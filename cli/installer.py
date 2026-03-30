@@ -16,7 +16,7 @@ import shutil
 import aiofiles
 from rich.console import Console
 import httpx
-from .models import Recipe, Targets, PackageType
+from .models import RecipeSchema, Targets, PackageType
 from .config import AppConfig, load_config
 
 console = Console()
@@ -38,7 +38,7 @@ def get_default_cache_dir() -> Path:
 
 
 async def download_package(
-    recipe: Recipe, custom_path: Optional[Path] = None, chunk_size: int = 8192
+    recipe: RecipeSchema, custom_path: Optional[Path] = None, chunk_size: int = 8192
 ) -> Path | None:
     """Download a package asynchronously over HTTP.
 
@@ -106,7 +106,7 @@ async def download_package(
     return None
 
 
-async def install_recipe(recipe: Recipe):
+async def install_recipe(recipe: RecipeSchema):
     """Orchestrate the installation process for a specific recipe.
 
     Downloads the artifact, loads current app config, and dispatches the
@@ -134,7 +134,7 @@ async def install_recipe(recipe: Recipe):
             console.log(f"[bold red]Installation is failed: {e} [/bold red]")
 
 
-def _sync_extract_package(zip_path: Path, recipe: Recipe, config: AppConfig):
+def _sync_extract_package(zip_path: Path, recipe: RecipeSchema, config: AppConfig):
     """Synchronously extract and place files from a downloaded ZIP archive.
 
     This function is CPU/IO bound and should be executed in a thread pool.

@@ -1,6 +1,6 @@
 import pytest
 from pydantic import ValidationError
-from cli.models import AppConfig, OsType, PackageType, Recipe, Targets
+from cli.models import AppConfig, OsType, PackageType, RecipeSchema, Targets
 
 # A valid recipe payload we can reuse and mutate in tests
 VALID_RECIPE_PAYLOAD = {
@@ -19,7 +19,7 @@ class TestModels:
 
     def test_recipe_creation_success(self):
         """Positive test: Ensure valid data creates a Recipe object without throwing exceptions."""
-        recipe = Recipe(**VALID_RECIPE_PAYLOAD)
+        recipe = RecipeSchema(**VALID_RECIPE_PAYLOAD)
 
         assert recipe.name == "vital"
         assert recipe.version == "1.5.5"
@@ -35,13 +35,13 @@ class TestModels:
         # Test too short
         invalid_payload["sha256"] = "a" * 63
         with pytest.raises(ValidationError) as exc_info:
-            Recipe(**invalid_payload)
+            RecipeSchema(**invalid_payload)
         assert "sha256" in str(exc_info.value)
 
         # Test too long
         invalid_payload["sha256"] = "a" * 65
         with pytest.raises(ValidationError) as exc_info:
-            Recipe(**invalid_payload)
+            RecipeSchema(**invalid_payload)
         assert "sha256" in str(exc_info.value)
 
     def test_recipe_empty_targets(self):
@@ -50,7 +50,7 @@ class TestModels:
         invalid_payload["targets"] = []
 
         with pytest.raises(ValidationError) as exc_info:
-            Recipe(**invalid_payload)
+            RecipeSchema(**invalid_payload)
 
         # Checking that the error is explicitly about the 'targets' field constraints
         assert "targets" in str(exc_info.value)
@@ -60,7 +60,7 @@ class TestModels:
         """Positive test: Check that valid OS values are accepted."""
         payload = VALID_RECIPE_PAYLOAD.copy()
         payload["os"] = os_val
-        recipe = Recipe(**payload)
+        recipe = RecipeSchema(**payload)
         assert recipe.os == OsType(os_val)
 
     def test_invalid_os_type(self):
@@ -69,7 +69,7 @@ class TestModels:
         payload["os"] = "templeos"  # Unsupported
 
         with pytest.raises(ValidationError):
-            Recipe(**payload)
+            RecipeSchema(**payload)
 
     def test_app_config_defaults(self):
         """Positive test: Ensure AppConfig has sensible fallback defaults if not provided."""

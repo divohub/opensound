@@ -56,7 +56,7 @@ class Targets(BaseModel):
     enabled: bool = True
 
 
-class Recipe(BaseModel):
+class RecipeSchema(BaseModel):
     """Configuration recipe for an installable sound package or plugin.
 
     Attributes:

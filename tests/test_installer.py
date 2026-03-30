@@ -5,7 +5,7 @@ from unittest.mock import patch, MagicMock
 import httpx
 
 from cli.installer import get_default_cache_dir, _sync_extract_package
-from cli.models import Recipe, AppConfig
+from cli.models import RecipeSchema, AppConfig
 
 # A valid recipe for our tests
 VALID_RECIPE_PAYLOAD = {
@@ -43,7 +43,7 @@ class TestInstaller:
 
         mock_zipfile.return_value.__enter__.return_value = mock_zf
 
-        recipe = Recipe(**VALID_RECIPE_PAYLOAD)
+        recipe = RecipeSchema(**VALID_RECIPE_PAYLOAD)
         config = AppConfig()
 
         with pytest.raises(ValueError) as exc_info:
