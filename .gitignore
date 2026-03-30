@@ -1,8 +1,22 @@
 /logs
 /DELIVERY.md
 /PLAN.md
-/cli/__pycache__
 /AGENTS.md
 /log.bak
 /session-ses_2e02.md
 /opensound.json
+
+# Environment variables
+.env
+.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+.pytest_cache/
+.coverage
+dist/
+build/
+*.egg-info/
